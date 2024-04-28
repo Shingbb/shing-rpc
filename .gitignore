@@ -1,0 +1,5 @@
+/.idea/
+/target/!/example-common/target/
+!/example-consumer/target/
+!/example-provider/target/
+!/shing-rpc-easy/target/

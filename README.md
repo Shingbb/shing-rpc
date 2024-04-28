@@ -13,7 +13,8 @@
 - 基础版只需学几个小时，就能写在简历上的小项目~
 - 扩展版将是充满亮点的技术类项目，搭配一个业务项目，让简历更有竞争力。
 
->开源地址1：https://github.com/Shingbb/shing-rpc.git
+>开源地址1： https://github.com/Shingbb/shing-rpc.git
+> 
 >开源地址2：https://gitee.com/MyShing/shing-rpc.git
 
 
