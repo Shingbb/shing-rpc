@@ -2,6 +2,7 @@ package com.shing.example.consumer;
 
 import com.shing.example.common.model.User;
 import com.shing.example.common.service.UserService;
+import com.shing.shingrpc.proxy.ServiceProxyFactory;
 
 /**
  * 简易服务消费者示例
@@ -11,8 +12,12 @@ import com.shing.example.common.service.UserService;
  */
 public class EasyConsumerExample {
     public static void main(String[] args) {
-        // todo 需要获取 UserService 的实现类对象
-        UserService userService = null;
+        // 静态代理
+//        UserService userService = new UserServiceProxy();
+
+        // 动态代理
+        UserService userService = ServiceProxyFactory.getProxy(UserService.class);
+
         User user = new User(); // 创建一个用户实例，设置用户名
         user.setName("shing");
 
