@@ -39,7 +39,7 @@ public class UserServiceProxy implements UserService {
             // 将RPC请求序列化为字节数组并发送HTTP POST请求
             byte[] bodyBytes = serializer.serialize(rpcRequest);
             byte[] result;
-            try (HttpResponse httpResponse = HttpRequest.post("http://localhost:8080")
+            try (HttpResponse httpResponse = HttpRequest.post("http://localhost:8081")
                     .body(bodyBytes)
                     .execute()) {
                 // 接收响应并反序列化为RPC响应对象
