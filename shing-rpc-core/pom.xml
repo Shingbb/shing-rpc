@@ -5,33 +5,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.shing</groupId>
-    <artifactId>example-consumer</artifactId>
+    <artifactId>shing-rpc-core</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-     <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
-        <!--shing-rpc-core-->
+        <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
         <dependency>
-            <groupId>com.shing</groupId>
-            <artifactId>shing-rpc-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <!--shing-rpc-easy-->
-        <dependency>
-            <groupId>com.shing</groupId>
-            <artifactId>shing-rpc-easy</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <!-- example-common-->
-        <dependency>
-            <groupId>com.shing</groupId>
-            <artifactId>example-common</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>4.5.1</version>
         </dependency>
         <!-- https://doc.hutool.cn/ -->
         <dependency>
@@ -46,6 +33,17 @@
             <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.3.12</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
 </project>

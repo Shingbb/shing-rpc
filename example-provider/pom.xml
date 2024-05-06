@@ -14,11 +14,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
+        <!--shing-rpc-core-->
+        <dependency>
+            <groupId>com.shing</groupId>
+            <artifactId>shing-rpc-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--shing-rpc-easy-->
         <dependency>
             <groupId>com.shing</groupId>
             <artifactId>shing-rpc-easy</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+       <!-- example-common-->
         <dependency>
             <groupId>com.shing</groupId>
             <artifactId>example-common</artifactId>
