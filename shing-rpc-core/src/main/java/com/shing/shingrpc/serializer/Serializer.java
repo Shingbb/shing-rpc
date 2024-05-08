@@ -22,10 +22,10 @@ public interface Serializer {
      * 将字节数组反序列化为指定类型的对象。
      *
      * @param bytes 需要被反序列化的字节数组
-     * @param clazz 需要反序列化的对象的类类型
+     * @param tClass 需要反序列化的对象的类类型
      * @param <T> 对象的类型
      * @return 反序列化后的对象
      * @throws IOException 反序列化过程中发生的IO异常
      */
-    <T> T deserialize(byte[] bytes, Class<T> clazz) throws IOException;
+    <T> T deserialize(byte[] bytes, Class<T> tClass) throws IOException;
 }
