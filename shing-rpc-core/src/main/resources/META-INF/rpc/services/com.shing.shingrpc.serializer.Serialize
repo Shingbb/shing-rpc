@@ -1,0 +1,5 @@
+jdk=com.shing.shingrpc.serializer.JdkSerializer
+hessin=com.shing.shingrpc.serializer.HessianSerializer
+fastjson=com.shing.shingrpc.serializer.FastjsonSerializer
+jackson=com.shing.shingrpc.serializer.JacksonSerializer
+kryo=com.shing.shingrpc.serializer.KryoSerializer

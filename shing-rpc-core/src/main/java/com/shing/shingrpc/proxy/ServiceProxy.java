@@ -2,10 +2,12 @@ package com.shing.shingrpc.proxy;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.shing.shingrpc.RpcApplication;
 import com.shing.shingrpc.model.RpcRequest;
 import com.shing.shingrpc.model.RpcResponse;
 import com.shing.shingrpc.serializer.JdkSerializer;
 import com.shing.shingrpc.serializer.Serializer;
+import com.shing.shingrpc.serializer.SerializerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -29,11 +31,12 @@ public class ServiceProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         // 指定序列化器
 //        Serializer serializer = new JdkSerializer();
-        Serializer serializer = null;
-        ServiceLoader<Serializer> serviceLoader = ServiceLoader.load(Serializer.class);
-        for (Serializer service : serviceLoader) {
-            serializer = service;
-        }
+//        Serializer serializer = null;
+//        ServiceLoader<Serializer> serviceLoader = ServiceLoader.load(Serializer.class);
+//        for (Serializer service : serviceLoader) {
+//            serializer = service;
+//        }
+        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
         // 构造请求
         RpcRequest rpcRequest = RpcRequest.builder()

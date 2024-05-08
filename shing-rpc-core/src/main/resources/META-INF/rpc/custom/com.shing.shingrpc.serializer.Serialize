@@ -1,0 +1,2 @@
+a=com.shing.shingrpc.serializer.JdkSerializer
+b=com.shing.shingrpc.serializer.HessianSerializer
