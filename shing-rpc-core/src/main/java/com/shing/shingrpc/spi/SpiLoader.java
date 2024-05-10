@@ -83,11 +83,22 @@ public class SpiLoader {
         // 从实例缓存中加载指定类型的实例
         String implClassName = implClass.getName();
         if (!instanceCache.containsKey(implClassName)) {
-            try {
+            /*try {
                 instanceCache.put(implClassName, implClass.newInstance());
             } catch (InstantiationException | IllegalAccessException e) {
                 String errorMsg = String.format("%s 类实例化失败", implClassName);
                 throw new RuntimeException(errorMsg, e);
+            }*/
+            // 将SPI Loader 改成了使用单例双检索实现了懒加载
+            if (!instanceCache.containsKey(implClassName)) {
+                synchronized (SpiLoader.class) {
+                    try {
+                        instanceCache.put(implClassName, implClass.newInstance());
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        String errorMsg = String.format("%s 类实例化失败", implClassName);
+                        throw new RuntimeException(errorMsg, e);
+                    }
+                }
             }
         }
         return (T) instanceCache.get(implClassName);
