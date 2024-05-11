@@ -1,7 +1,10 @@
 package com.shing.shingrpc;
 
+import com.shing.shingrpc.config.RegistryConfig;
 import com.shing.shingrpc.config.RpcConfig;
 import com.shing.shingrpc.constant.RpcConstant;
+import com.shing.shingrpc.registry.Registry;
+import com.shing.shingrpc.registry.RegistryFactory;
 import com.shing.shingrpc.utils.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +33,13 @@ public class RpcApplication {
     public static void init(RpcConfig newRpcConfig) {
         rpcConfig = newRpcConfig;
         log.info("rpc init,config={}", newRpcConfig.toString());
+
+        // 注册中心初始化
+        RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
+        Registry registry = RegistryFactory.getInstance(registryConfig.getRegistry());
+        registry.init(registryConfig);
+        log.info("registry init, config = {}", registryConfig);
+
     }
 
     /**
@@ -64,6 +74,5 @@ public class RpcApplication {
         }
         return rpcConfig;
     }
-
 
 }
