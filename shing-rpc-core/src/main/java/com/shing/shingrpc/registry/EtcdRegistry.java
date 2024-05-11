@@ -1,42 +1,104 @@
 package com.shing.shingrpc.registry;
 
-import io.etcd.jetcd.ByteSequence;
-import io.etcd.jetcd.Client;
-import io.etcd.jetcd.KV;
-import io.etcd.jetcd.kv.GetResponse;
+import cn.hutool.json.JSONUtil;
+import com.shing.shingrpc.config.RegistryConfig;
+import com.shing.shingrpc.model.ServiceMetaInfo;
+import io.etcd.jetcd.*;
+import io.etcd.jetcd.options.PutOption;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+import java.util.Set;
 
 /**
- * EtcdRegistry 类用于演示如何使用 etcd 的 Java 客户端进行键值对的存取操作。
+ * Etcd 注册中心实现类，用于服务的注册与发现。
  *
  * @author shing
  */
-public class EtcdRegistry {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+public class EtcdRegistry implements Registry {
 
-        // 创建 Etcd 客户端连接，指定服务端地址
-        Client client = Client.builder().endpoints("http://localhost:2379")
-                .build();
+    private Client client;
 
-        // 获取 KV 客户端用于键值对操作
-        KV kvClient = client.getKVClient();
-        // 定义要存储的键和值
-        ByteSequence key = ByteSequence.from("test_key".getBytes());
-        ByteSequence value = ByteSequence.from("test_value".getBytes());
+    private KV kvClient;
 
-        // 将键值对存入 etcd
-        kvClient.put(key, value).get();
+    /**
+     * 注册中心根路径
+     */
+    private static final String ETCD_ROOT_PATH = "/rpc/";
 
-        // 异步获取键对应的值
-        CompletableFuture<GetResponse> getFuture = kvClient.get(key);
 
-        // 等待异步操作完成，获取响应结果
-        GetResponse response = getFuture.get();
+    /**
+     * 初始化 Etcd 注册中心。
+     *
+     * @param registryConfig 注册中心配置信息，包括地址和超时时间。
+     */
+    @Override
+    public void init(RegistryConfig registryConfig) {
+        // 创建 Etcd 客户端并连接到指定的地址
+        client = Client.builder().endpoints(registryConfig.getAddress()).connectTimeout(Duration.ofMillis(registryConfig.getTimeout())).build();
+        kvClient = client.getKVClient();
+    }
 
-        // 删除已存储的键
-        kvClient.delete(key).get();
+    /**
+     * 注册服务到 Etcd 注册中心。
+     *
+     * @param serviceMetaInfo 待注册的服务元数据信息。
+     * @throws Exception 如果注册过程中遇到任何错误，则抛出异常。
+     */
+    @Override
+    public void register(ServiceMetaInfo serviceMetaInfo) throws Exception {
+        // 获取 Lease 客户端
+        Lease leaseClient = client.getLeaseClient();
+
+        // 为服务注册创建一个 30 秒的租约
+        long leaseId = leaseClient.grant(30).get().getID();
+
+        String registerKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey();
+        ByteSequence key = ByteSequence.from(registerKey, StandardCharsets.UTF_8);
+        ByteSequence value = ByteSequence.from(JSONUtil.toJsonStr(serviceMetaInfo), StandardCharsets.UTF_8);
+
+        // 将服务的键值对与租约关联，并设置租约过期时间
+        PutOption putOption = PutOption.builder().withLeaseId(leaseId).build();
+        kvClient.put(key, value, putOption).get();
+    }
+
+    /**
+     * 从 Etcd 注册中心注销服务。
+     *
+     * @param serviceMetaInfo 待注销的服务元数据信息。
+     */
+    @Override
+    public void unRegister(ServiceMetaInfo serviceMetaInfo) {
+        // 直接删除对应的服务注册信息
+        kvClient.delete(ByteSequence.from(ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey(), StandardCharsets.UTF_8));
+    }
+
+    /**
+     * 实现服务发现功能，查询指定服务的所有提供者。
+     *
+     * @param serviceKey 需要查询的服务关键字。
+     * @return 返回空列表，该方法暂未实现服务发现功能。
+     */
+    @Override
+    public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
+        // 暂未实现服务发现，返回空列表
+        return List.of();
+    }
+
+    /**
+     * 销毁注册中心连接，释放资源。
+     */
+    @Override
+    public void destroy() {
+        // 输出节点下线信息并释放资源
+        System.out.println("当前节点下线");
+        // 关闭 KV 和 Client 客户端，释放资源
+        if (kvClient != null) {
+            kvClient.close();
+        }
+        if (client != null) {
+            client.close();
+        }
     }
 }
-
