@@ -41,9 +41,5 @@ public interface Registry {
      */
     List<ServiceMetaInfo> serviceDiscovery(String serviceKey);
 
-    /**
-     * 服务销毁
-     */
     void destroy();
-
 }

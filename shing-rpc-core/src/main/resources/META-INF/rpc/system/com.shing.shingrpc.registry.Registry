@@ -1,1 +1,1 @@
-etc=com.shing.shingrpc.registry.Registry
+etcd=com.shing.shingrpc.registry.EtcdRegistry

@@ -1,15 +1,18 @@
 package com.shing.shingrpc.model;
 
 import cn.hutool.core.util.StrUtil;
+import com.shing.shingrpc.constant.RpcConstant;
 import lombok.Data;
 
-@Data
+
 /**
  * 服务元信息（注册信息）
  *
  * @author shing
  */
+@Data
 public class ServiceMetaInfo {
+
     /**
      * 服务名称
      */
@@ -18,7 +21,7 @@ public class ServiceMetaInfo {
     /**
      * 服务版本号
      */
-    private String serviceVersion = "1.0";
+    private String serviceVersion = RpcConstant.DEFAULT_SERVICE_VERSION;
 
     /**
      * 服务域名
@@ -42,7 +45,7 @@ public class ServiceMetaInfo {
      */
     public String getServiceKey() {
         // 后续可扩展服务分组
-        // return String.format("%s:%s:%s", serviceName, serviceVersion, serviceGroup);
+//        return String.format("%s:%s:%s", serviceName, serviceVersion, serviceGroup);
         return String.format("%s:%s", serviceName, serviceVersion);
     }
 

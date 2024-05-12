@@ -4,12 +4,13 @@ import cn.hutool.json.JSONUtil;
 import com.shing.shingrpc.config.RegistryConfig;
 import com.shing.shingrpc.model.ServiceMetaInfo;
 import io.etcd.jetcd.*;
+import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Etcd 注册中心实现类，用于服务的注册与发现。
@@ -54,6 +55,7 @@ public class EtcdRegistry implements Registry {
         // 为服务注册创建一个 30 秒的租约
         long leaseId = leaseClient.grant(30).get().getID();
 
+        // 设置要存储的键值对
         String registerKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey();
         ByteSequence key = ByteSequence.from(registerKey, StandardCharsets.UTF_8);
         ByteSequence value = ByteSequence.from(JSONUtil.toJsonStr(serviceMetaInfo), StandardCharsets.UTF_8);
@@ -82,18 +84,33 @@ public class EtcdRegistry implements Registry {
      */
     @Override
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
-        // 暂未实现服务发现，返回空列表
-        return List.of();
+        //前缀搜索，结尾一定要加 '/'
+        String searchPrefix = ETCD_ROOT_PATH + serviceKey + "/";
+
+        try {
+            // 前缀查询
+            GetOption getOption = GetOption.builder().isPrefix(true).build();
+            List<KeyValue> keyValues = kvClient.get(
+                            ByteSequence.from(searchPrefix, StandardCharsets.UTF_8),
+                            getOption)
+                    .get()
+                    .getKvs();
+            // 解析服务信息
+            return keyValues.stream()
+                    .map(keyValue -> {
+                        String value = keyValue.getValue().toString(StandardCharsets.UTF_8);
+                        return JSONUtil.toBean(value, ServiceMetaInfo.class);
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("获取服务列表失败", e);
+        }
     }
 
-    /**
-     * 销毁注册中心连接，释放资源。
-     */
     @Override
     public void destroy() {
-        // 输出节点下线信息并释放资源
         System.out.println("当前节点下线");
-        // 关闭 KV 和 Client 客户端，释放资源
+        // 释放资源
         if (kvClient != null) {
             kvClient.close();
         }
