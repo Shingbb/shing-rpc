@@ -1,1 +1,2 @@
 etcd=com.shing.shingrpc.registry.EtcdRegistry
+zookeeper=com.shing.shingrpc.registry.ZooKeeperRegistry
