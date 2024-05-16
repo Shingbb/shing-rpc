@@ -9,6 +9,8 @@ import com.shing.shingrpc.model.ServiceMetaInfo;
 import io.etcd.jetcd.*;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
+import io.etcd.jetcd.watch.WatchEvent;
+import io.vertx.core.impl.ConcurrentHashSet;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -34,6 +36,16 @@ public class EtcdRegistry implements Registry {
      * 本机注册的节点 key 集合（用于维护续期）
      */
     private final Set<String> localRegisterNodeKeySet = new HashSet<>();
+
+    /**
+     * 注册中心服务缓存
+     */
+    private final RegistryServiceCache registryServiceCache = new RegistryServiceCache();
+
+    /**
+     * 正在监听的 key 集合
+     */
+    private final Set<String> watchingKeySet = new ConcurrentHashSet<>();
 
     /**
      * 注册中心根路径
@@ -108,6 +120,11 @@ public class EtcdRegistry implements Registry {
      */
     @Override
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
+        // 优先从缓存获取服务
+        List<ServiceMetaInfo> cachedServiceMetaInfoList = registryServiceCache.readCache();
+        if (cachedServiceMetaInfoList != null) {
+            return cachedServiceMetaInfoList;
+        }
         //前缀搜索，结尾一定要加 '/'
         String searchPrefix = ETCD_ROOT_PATH + serviceKey + "/";
 
@@ -120,12 +137,18 @@ public class EtcdRegistry implements Registry {
                     .get()
                     .getKvs();
             // 解析服务信息
-            return keyValues.stream()
+            List<ServiceMetaInfo> serviceMetaInfoList = keyValues.stream()
                     .map(keyValue -> {
+                        String key = keyValue.getKey().toString(StandardCharsets.UTF_8);
+                        // 监听 key 的变化
+                        watch(key);
                         String value = keyValue.getValue().toString(StandardCharsets.UTF_8);
                         return JSONUtil.toBean(value, ServiceMetaInfo.class);
                     })
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toUnmodifiableList());
+            // 写入缓存
+            registryServiceCache.writeCache(serviceMetaInfoList);
+            return serviceMetaInfoList;
         } catch (Exception e) {
             throw new RuntimeException("获取服务列表失败", e);
         }
@@ -197,4 +220,35 @@ public class EtcdRegistry implements Registry {
             client.close();
         }
     }
+
+    /**
+     * 监视指定的服务节点。 （消费端）
+     * 当服务节点发生变更（如被删除）时，根据事件类型执行相应的处理逻辑。
+     *
+     * @param serviceNodeKey 服务节点的键，用于标识具体的服务节点。
+     */
+    @Override
+    public void watch(String serviceNodeKey) {
+        Watch watchClient = client.getWatchClient();
+        // 判断当前是否开始监听该 key，若未监听则开始监听
+        boolean newWatch = watchingKeySet.add(serviceNodeKey);
+        if (newWatch) {
+            // 对指定的 key 开始监听
+            watchClient.watch(ByteSequence.from(serviceNodeKey, StandardCharsets.UTF_8), response -> {
+                for (WatchEvent event : response.getEvents()) {
+                    switch (event.getEventType()) {
+                        // 当服务节点被删除时，清理注册服务的缓存
+                        case DELETE:
+                            registryServiceCache.clearCache();
+                            break;
+                        case PUT:
+                        default:
+                            // 对于其他事件类型（如 PUT），当前逻辑不做处理
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
 }
