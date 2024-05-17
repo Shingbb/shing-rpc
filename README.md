@@ -6,7 +6,8 @@
 
 ## 项目介绍
 
-基于 Java + Etcd + Vert.x 的高性能 RPC 框架.提供服务注册，发现，负载均衡。是一个学习RPC工作原理的良好示例。
+基于 Java + Etcd + Vert.x 的高性能 RPC 框架.提供服务注册，发现，负载均衡。是一个学习RPC工作原理的良好示例。下面看一下RPC的调用流程：
+<img src="https://shaogezhu.cn/assets/2022-11/rpc2.png" style="zoom:66%;" />
 
 实践基于 Vert.x 的网络服序列务器、化器、基于 Etcd 和 ZooKeeper 的注册中心、反射、动态代理、自定义网络协议、多种设计模式（单例 / 工厂 / 装饰者等）、负载均衡器设计、重试和容错机制、Spring Boot Starter 注解驱动开发等，大幅提升架构设计能力。
 
