@@ -30,6 +30,7 @@
 - ⭐️ SPI 机制
 - ⭐️ 多种序列化器
     - JSON 序列化
+    - jackson 序列化
     - Kryo 序列化
     - Hessian 序列化
 - ⭐️ 多种设计模式
