@@ -10,6 +10,7 @@ import com.shing.shingrpc.registry.Registry;
 import com.shing.shingrpc.registry.RegistryFactory;
 import com.shing.shingrpc.server.HttpServer;
 import com.shing.shingrpc.server.VertxHttpServer;
+import com.shing.shingrpc.server.tcp.VertxTcpServer;
 
 /**
  * 简易服务提供者示例
@@ -40,7 +41,10 @@ public class ProviderExample {
         }
 
         // 启动 web 服务
-        HttpServer httpServer = new VertxHttpServer();
-        httpServer.doStart(RpcApplication.getRpcConfig().getServerPort());
+        /*HttpServer httpServer = new VertxHttpServer();
+        httpServer.doStart(RpcApplication.getRpcConfig().getServerPort());*/
+        // 启动 TCP 服务
+        VertxTcpServer vertxTcpServer = new VertxTcpServer();
+        vertxTcpServer.doStart(8080);
     }
 }

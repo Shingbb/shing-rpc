@@ -52,7 +52,7 @@ public class SpiLoader {
     private static final List<Class<?>> LOAD_CLASS_LIST = Arrays.asList(Serializer.class);
 
     /**
-     * 加载所有类型
+     * 加载所有 SPI
      */
     public static void loadAll() {
         log.info("加载所有 SPI");
@@ -64,10 +64,10 @@ public class SpiLoader {
     /**
      * 获取某个接口的实例
      *
-     * @param tClass
-     * @param key
-     * @param <T>
-     * @return
+     * @param tClass 需要获取实例的接口类
+     * @param key    实例的标识 key
+     * @param <T>    泛型，接口类型
+     * @return 返回指定接口和 key 对应的实例
      */
     public static <T> T getInstance(Class<?> tClass, String key) {
         String tClassName = tClass.getName();
@@ -107,8 +107,8 @@ public class SpiLoader {
     /**
      * 加载某个类型
      *
-     * @param loadClass
-     * @return
+     * @param loadClass 需要加载的类型
+     * @return 返回加载的 key 和类映射
      */
     public static Map<String, Class<?>> load(Class<?> loadClass) {
         log.info("加载类型为 {} 的 SPI", loadClass.getName());
@@ -139,3 +139,4 @@ public class SpiLoader {
         return keyClassMap;
     }
 }
+
