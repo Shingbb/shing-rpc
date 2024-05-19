@@ -24,11 +24,12 @@ public class VertxTcpClient {
                 // 连接成功时的操作
                 System.out.println("Connected to TCP server");
                 io.vertx.core.net.NetSocket socket = result.result();
+                // 连续发送 1000 次消息
+                for (int i = 0; i < 1000; i++) {
+                    socket.write("Hello, server!Hello, server!Hello, server!Hello, server!");
+                }
 
-                // 向服务器发送消息
-                socket.write("Hello, server!");
-
-                // 设置处理服务器响应的回调函数
+                // 接受响应
                 socket.handler(buffer -> {
                     System.out.println("Received response from server: " + buffer.toString());
                 });
