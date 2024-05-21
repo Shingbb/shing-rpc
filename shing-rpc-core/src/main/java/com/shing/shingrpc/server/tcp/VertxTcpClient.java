@@ -1,51 +1,82 @@
 package com.shing.shingrpc.server.tcp;
 
+import com.shing.shingrpc.RpcApplication;
+import com.shing.shingrpc.model.RpcRequest;
+import com.shing.shingrpc.model.RpcResponse;
+import com.shing.shingrpc.model.ServiceMetaInfo;
+import com.shing.shingrpc.protocol.*;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetSocket;
+
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
- * Vert.x TCP 客户端示例。
- * 使用 Vert.x 的 NetClient 来连接 TCP 服务器，发送数据，并接收响应。
+ * Vertx TCP 请求客户端
  *
+ * 用于通过TCP协议向指定的服务端发送RPC请求，并获取响应。
  * @author shing
  */
 public class VertxTcpClient {
 
     /**
-     * 启动客户端，创建 Vert.x 实例，并尝试连接到指定的 TCP 服务器。
-     * 一旦连接成功，将向服务器发送消息，并处理来自服务器的响应。
+     * 发送RPC请求并获取响应
+     * @param rpcRequest RPC请求对象
+     * @param serviceMetaInfo 服务元信息，包含服务的主机地址和端口号
+     * @return RPC响应对象
+     * @throws InterruptedException 如果执行过程中线程被中断则抛出此异常
+     * @throws ExecutionException 如果获取CompletableFuture结果时发生异常则抛出此异常
      */
-    public void start() {
-        // 创建 Vert.x 实例
+    public static RpcResponse doRequest(RpcRequest rpcRequest, ServiceMetaInfo serviceMetaInfo) throws InterruptedException, ExecutionException {
+        // 创建Vertx实例和NetClient客户端
         Vertx vertx = Vertx.vertx();
+        NetClient netClient = vertx.createNetClient();
+        CompletableFuture<RpcResponse> responseFuture = new CompletableFuture<>();
 
-        // 尝试连接到本地主机的 8888 端口
-        vertx.createNetClient().connect(8888, "localhost", result -> {
-            if (result.succeeded()) {
-                // 连接成功时的操作
-                System.out.println("Connected to TCP server");
-                io.vertx.core.net.NetSocket socket = result.result();
-                // 连续发送 1000 次消息
-                for (int i = 0; i < 1000; i++) {
-                    socket.write("Hello, server!Hello, server!Hello, server!Hello, server!");
-                }
-
-                // 接受响应
-                socket.handler(buffer -> {
-                    System.out.println("Received response from server: " + buffer.toString());
-                });
-            } else {
-                // 连接失败时的处理
+        // 尝试连接到服务端
+        netClient.connect(serviceMetaInfo.getServicePort(), serviceMetaInfo.getServiceHost(), result -> {
+            if (!result.succeeded()) {
                 System.err.println("Failed to connect to TCP server");
+                return;
             }
+            NetSocket socket = result.result();
+
+            // 构造协议消息并发送请求
+            ProtocolMessage<RpcRequest> protocolMessage = new ProtocolMessage<>();
+            ProtocolMessage.Header header = new ProtocolMessage.Header();
+            header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
+            header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
+            header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(RpcApplication.getRpcConfig().getSerializer()).getKey());
+            header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
+
+            // 编码请求并发送至服务端
+            try {
+                Buffer encodeBuffer = ProtocolMessageEncoder.encode(protocolMessage);
+                socket.write(encodeBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException("协议消息编码错误");
+            }
+
+            // 设置接收响应的处理逻辑
+            TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(buffer -> {
+                try {
+                    // 解码接收到的响应
+                    ProtocolMessage<RpcResponse> rpcResponseProtocolMessage = (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
+                    responseFuture.complete(rpcResponseProtocolMessage.getBody());
+                } catch (IOException e) {
+                    throw new RuntimeException("协议消息解码错误");
+                }
+            });
+            socket.handler(bufferHandlerWrapper);
         });
+
+        // 等待响应完成并返回
+        RpcResponse rpcResponse = responseFuture.get();
+
+        return rpcResponse;
     }
 
-    /**
-     * 程序的入口点。创建 VertxTcpClient 实例并启动客户端。
-     *
-     * @param args 命令行参数（未使用）
-     */
-    public static void main(String[] args) {
-        new VertxTcpClient().start();
-    }
 }

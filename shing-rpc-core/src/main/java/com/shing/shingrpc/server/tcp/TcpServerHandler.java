@@ -16,17 +16,19 @@ import java.lang.reflect.Method;
 
 /**
  * 处理TCP服务器的连接请求，负责接收请求、处理请求并发送响应。
+ *
  * @author shing
  */
 public class TcpServerHandler implements Handler<NetSocket> {
     /**
      * 处理接收到的NetSocket连接。
-     * @param netSocket 与客户端建立的网络套接字。
+     *
+     * @param socket 与客户端建立的网络套接字。
      */
     @Override
-    public void handle(NetSocket netSocket) {
+    public void handle(NetSocket socket) {
         // 处理接收到的数据
-        netSocket.handler(buffer -> {
+        TcpBufferHandlerWrapper bufferHandlerWrapper = new TcpBufferHandlerWrapper(buffer -> {
             // 解码接收到的协议消息
             ProtocolMessage<RpcRequest> protocolMessage;
             try {
@@ -36,8 +38,8 @@ public class TcpServerHandler implements Handler<NetSocket> {
             }
             RpcRequest rpcRequest = protocolMessage.getBody();
 
-            // 处理RPC请求
-            // 构建RPC响应对象
+            // 处理 TCP 请求
+            // 构建响应结果对象
             RpcResponse rpcResponse = new RpcResponse();
             try {
                 // 通过服务名称获取服务实现类，使用反射调用相应方法
@@ -61,10 +63,11 @@ public class TcpServerHandler implements Handler<NetSocket> {
             ProtocolMessage<RpcResponse> responseProtocolMessage = new ProtocolMessage<>(header, rpcResponse);
             try {
                 Buffer encode = ProtocolMessageEncoder.encode(responseProtocolMessage);
-                netSocket.write(encode);
+                socket.write(encode);
             } catch (IOException e) {
                 throw new RuntimeException("协议消息编码错误");
             }
         });
+        socket.handler(bufferHandlerWrapper);
     }
 }
