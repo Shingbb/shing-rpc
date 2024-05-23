@@ -1,0 +1,3 @@
+roundRobin=com.shing.shingrpc.loadbalancer.RoundRobinLoadBalancer
+random=com.shing.shingrpc.loadbalancer.RandomLoadBalancer
+consistentHash=com.shing.shingrpc.loadbalancer.ConsistentHashLoadBalancer
