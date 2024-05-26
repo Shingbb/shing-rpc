@@ -1,5 +1,6 @@
 package com.shing.shingrpc.config;
 
+import com.shing.shingrpc.fault.retry.RetryStrategyKeys;
 import com.shing.shingrpc.loadbalancer.LoadBalancerKeys;
 import com.shing.shingrpc.serializer.SerializerKeys;
 import lombok.Data;
@@ -52,5 +53,10 @@ public class RpcConfig {
      * 注册中心配置
      */
     private RegistryConfig registryConfig = new RegistryConfig();
+
+    /**
+     * 重试策略
+     */
+    private String retryStrategy = RetryStrategyKeys.NO;
 
 }

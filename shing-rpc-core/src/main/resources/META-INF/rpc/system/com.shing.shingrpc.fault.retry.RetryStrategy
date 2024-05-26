@@ -1,0 +1,2 @@
+no=com.shing.shingrpc.fault.retry.NoRetryStrategy
+fixedInterval=com.shing.shingrpc.fault.retry.FixedIntervalRetryStrategy
