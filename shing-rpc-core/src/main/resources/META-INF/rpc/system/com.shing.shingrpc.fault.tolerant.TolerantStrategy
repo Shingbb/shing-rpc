@@ -1,0 +1,4 @@
+failBack=com.shing.shingrpc.fault.tolerant.FailBackTolerantStrategy
+failFast=com.shing.shingrpc.fault.tolerant.FailFastTolerantStrategy
+failOver=com.shing.shingrpc.fault.tolerant.FailOverTolerantStrategy
+failSafe=com.shing.shingrpc.fault.tolerant.FailSafeTolerantStrategy

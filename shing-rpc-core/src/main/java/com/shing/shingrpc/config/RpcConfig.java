@@ -1,6 +1,7 @@
 package com.shing.shingrpc.config;
 
 import com.shing.shingrpc.fault.retry.RetryStrategyKeys;
+import com.shing.shingrpc.fault.tolerant.TolerantStrategyKeys;
 import com.shing.shingrpc.loadbalancer.LoadBalancerKeys;
 import com.shing.shingrpc.serializer.SerializerKeys;
 import lombok.Data;
@@ -58,5 +59,10 @@ public class RpcConfig {
      * 重试策略
      */
     private String retryStrategy = RetryStrategyKeys.NO;
+
+    /**
+     * 容错策略
+     */
+    private String tolerantStrategy = TolerantStrategyKeys.FAIL_FAST;
 
 }
