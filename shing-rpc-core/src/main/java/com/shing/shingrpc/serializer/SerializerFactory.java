@@ -9,16 +9,14 @@ import com.shing.shingrpc.spi.SpiLoader;
  */
 public class SerializerFactory {
 
-    /*static {
+    static {
         SpiLoader.load(Serializer.class);
-    }*/
+    }
 
     /**
      * 默认序列化器
      */
-    private static Serializer DEFAULT_SERIALIZER;
-
-//    private static final Serializer DEFAULT_SERIALIZER = new JdkSerializer();
+    private static final Serializer DEFAULT_SERIALIZER = new JdkSerializer();
 
 
     /**
@@ -28,14 +26,6 @@ public class SerializerFactory {
      * @return
      */
     public static Serializer getInstance(String key) {
-        if (DEFAULT_SERIALIZER == null) {
-            synchronized (SerializerFactory.class) {
-                if (DEFAULT_SERIALIZER == null) {
-                    SpiLoader.load(Serializer.class);
-                    DEFAULT_SERIALIZER = new JdkSerializer();
-                }
-            }
-        }
         return SpiLoader.getInstance(Serializer.class, key);
     }
 
